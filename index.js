@@ -12,7 +12,7 @@ const IPFS = require('ipfs')
 const pdfQueue = new Queue('pdf transcoding', {
     redis: {
         port: 15957,
-        host: 'redis-15957.c253.us-central1-1.gce.cloud.redislabs.com',
+        host: process.env.URL,
         password: process.env.PASSWORD
     }
 })
@@ -48,8 +48,8 @@ async function toMhtml(link, ua, Xvfb, puppeteer) {
             '--ignore-certifcate-errors-spki-list',
             `--user-agent=${ua}`,
             '--disable-features=ImprovedCookieControls',
-            // `--disable-extensions-except=${paywallExtPath},${cookieExtPath}`,
-            // `--load-extension=${paywallExtPath},${cookieExtPath}`,
+            `--disable-extensions-except=${process.cwd()}/bypass-paywalls-chrome-master,${process.cwd()}/extension_5_7_5_0`,
+            `--load-extension=${process.cwd()}/bypass-paywalls-chrome-master,${process.cwd()}/extension_5_7_5_0`,
             '--no-zygote',
             '--disable-dev-shm-usage',
             '--disable-accelerated-2d-canvas',
