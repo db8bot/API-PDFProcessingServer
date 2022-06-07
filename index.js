@@ -7,7 +7,8 @@ app.use(express.urlencoded({ extended: true }))
 const mhtml2html = require('mhtml2html')
 const { JSDOM } = require('jsdom')
 const IPFS = require('ipfs')
-
+const axios = require('axios').default
+const pako = require('pako')
 
 const pdfQueue = new Queue('pdf transcoding', {
     redis: {
@@ -23,11 +24,19 @@ pdfQueue.process(2, async function (job, done) {
     var filename = `${job.data.guildID}-${job.data.reqUser}.html`
     const Xvfb = require('xvfb')
     const puppeteer = require('puppeteer')
-    const fsp = require('fs').promises
 
     const mhtml = await toMhtml(job.data.link, job.data.ua, Xvfb, puppeteer)
     const htmldoc = await mhtml2html.convert(mhtml, { parseDOM: (html) => new JSDOM(html) })
-    await fsp.writeFile(filename, htmldoc.serialize())
+
+    // dev: localhost:8080
+    await axios.post('http://localhost:8080/pdfin', {
+        link: job.data.link,
+        ua: job.data.ua,
+        guildID: job.data.guildID,
+        channelID: job.data.channelID,
+        reqUser: job.data.reqUser,
+        file: htmldoc.serialize()
+    })
 
     done()
 })
@@ -199,14 +208,14 @@ async function autoScroll(page) {
 }
 
 app.post('/add', async (req, resApp) => {
-    pdfQueue.add({ link: req.body.link, ua: req.body.ua, guildID: req.body.guildid, reqUser: req.body.requser })
+    pdfQueue.add({ link: req.body.link, ua: req.body.ua, guildID: req.body.guildid, channelID: req.body.channelid, reqUser: req.body.requser })
     resApp.sendStatus(200)
 })
 
 
 var port = process.env.PORT
 if (port == null || port === '') {
-    port = 8080
+    port = 8081
 }
 
 app.listen(port, () => {
