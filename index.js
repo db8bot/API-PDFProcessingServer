@@ -27,7 +27,7 @@ pdfQueue.process(2, async function (job, done) {
     const htmldoc = await mhtml2html.convert(mhtml, { parseDOM: (html) => new JSDOM(html) })
 
     // dev: localhost:8080
-    await axios.post('http://localhost:8080/pdfin', {
+    await axios.post('http://104.154.76.26:8080/pdfin', {
         link: job.data.link,
         ua: job.data.ua,
         guildID: job.data.guildID,
@@ -40,11 +40,11 @@ pdfQueue.process(2, async function (job, done) {
 })
 
 async function toMhtml(link, ua, Xvfb, puppeteer) {
-    // const xvfb = new Xvfb({
-    //     silent: true,
-    //     xvfb_args: ['-screen', '0', '1024x768x24', '-ac']
-    // })
-    // xvfb.startSync()
+    const xvfb = new Xvfb({
+        silent: true,
+        xvfb_args: ['-screen', '0', '1024x768x24', '-ac']
+    })
+    xvfb.startSync()
     const browser = await puppeteer.launch({
         args: [
             '--no-sandbox',
@@ -92,7 +92,7 @@ async function toMhtml(link, ua, Xvfb, puppeteer) {
             '--disable-seccomp-filter-sandbox',
             '--no-experiments',
             '--disable-renderer-backgrounding',
-            // '--display=' + xvfb._display
+            '--display=' + xvfb._display
         ],
         headless: false,
         defaultViewport: null,
@@ -181,7 +181,7 @@ async function toMhtml(link, ua, Xvfb, puppeteer) {
     const client = await page.target().createCDPSession()
     const { data } = await client.send('Page.captureSnapshot', { format: 'mhtml' })
     await browser.close()
-    // xvfb.stopSync()
+    xvfb.stopSync()
     return data
 }
 
