@@ -8,7 +8,6 @@ const mhtml2html = require('mhtml2html')
 const { JSDOM } = require('jsdom')
 const IPFS = require('ipfs')
 const axios = require('axios').default
-const pako = require('pako')
 
 const pdfQueue = new Queue('pdf transcoding', {
     redis: {
@@ -20,8 +19,7 @@ const pdfQueue = new Queue('pdf transcoding', {
 
 pdfQueue.process(2, async function (job, done) {
     console.log('jobbing')
-    console.log(job.data)
-    var filename = `${job.data.guildID}-${job.data.reqUser}.html`
+
     const Xvfb = require('xvfb')
     const puppeteer = require('puppeteer')
 
